@@ -2,6 +2,7 @@
 data/00--raw/*
 data/01--clean/*
 data/10--metadata/*
+data/shapefiles/*
 
 # Experiments
 experiments/*
