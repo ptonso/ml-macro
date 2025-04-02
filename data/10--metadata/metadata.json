@@ -1,0 +1,25 @@
+{
+    "eua": [
+        "united states",
+        "united states of america",
+        "usa",
+        "america"
+    ],
+    "brasil": [
+        "brazil",
+        "brasil"
+    ],
+    "china": [
+        "china",
+        "people's republic of china",
+        "prc"
+    ],
+    "india": [
+        "india",
+        "republic of india"
+    ],
+    "south_africa": [
+        "south africa",
+        "republic of south africa"
+    ]
+}
