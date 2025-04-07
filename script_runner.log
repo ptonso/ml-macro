@@ -343,3 +343,63 @@
 2025-03-21 13:48:42,279 - ERROR - ScriptRunner - [ERROR] - [download_macro] - Starting download from AlphaVantageAPI[0m
 2025-03-21 13:48:42,279 - ERROR - ScriptRunner - [ERROR] - [download_macro] - data fetching and saving completed.[0m
 2025-03-21 13:48:42,279 - INFO - ScriptRunner - [SUCCESS] download_macro - Completed successfully.
+2025-04-02 21:27:10,542 - INFO - ScriptRunner - [INFO] Running build_indicator_json.py...
+2025-04-02 21:27:10,665 - INFO - ScriptRunner - [INFO] - [build_indicator_json] - 
+2025-04-02 21:27:10,671 - INFO - ScriptRunner - [SUCCESS] build_indicator_json - Completed successfully.
+2025-04-02 21:27:10,672 - INFO - ScriptRunner - [INFO] Running build_metadata_json.py...
+2025-04-02 21:27:10,771 - INFO - ScriptRunner - [INFO] - [build_metadata_json] - 
+2025-04-02 21:27:10,786 - INFO - ScriptRunner - [SUCCESS] build_metadata_json - Completed successfully.
+2025-04-02 21:27:10,786 - INFO - ScriptRunner - [INFO] Running build_standarization_json.py...
+2025-04-02 21:27:10,899 - INFO - ScriptRunner - [INFO] - [build_standarization_json] - 
+2025-04-02 21:27:10,916 - INFO - ScriptRunner - [SUCCESS] build_standarization_json - Completed successfully.
+2025-04-02 21:27:10,916 - INFO - ScriptRunner - [INFO] Running download_macro.py...
+2025-04-02 21:28:05,626 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:07,918 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:08,287 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:23,736 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:24,260 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:24,670 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:25,079 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:25,591 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:26,411 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:26,821 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:36,752 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:37,673 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:38,495 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:39,106 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:28:39,175 - ERROR - ScriptRunner - [ERROR] - [download_macro] - Starting download from WorldBankAPI[0m
+2025-04-02 21:28:39,175 - ERROR - ScriptRunner - [ERROR] - [download_macro] - Starting download from IMFAPI[0m
+2025-04-02 21:28:39,175 - ERROR - ScriptRunner - [ERROR] - [download_macro] - Starting download from OECDAPI[0m
+2025-04-02 21:28:39,176 - ERROR - ScriptRunner - [ERROR] - [download_macro] - Starting download from AlphaVantageAPI[0m
+2025-04-02 21:28:39,176 - ERROR - ScriptRunner - [ERROR] - [download_macro] - data fetching and saving completed.[0m
+2025-04-02 21:28:39,176 - INFO - ScriptRunner - [SUCCESS] download_macro - Completed successfully.
+2025-04-02 21:50:20,468 - INFO - ScriptRunner - [INFO] Running build_indicator_json.py...
+2025-04-02 21:50:20,595 - INFO - ScriptRunner - [INFO] - [build_indicator_json] - 
+2025-04-02 21:50:20,606 - INFO - ScriptRunner - [SUCCESS] build_indicator_json - Completed successfully.
+2025-04-02 21:50:20,606 - INFO - ScriptRunner - [INFO] Running build_metadata_json.py...
+2025-04-02 21:50:20,690 - INFO - ScriptRunner - [INFO] - [build_metadata_json] - 
+2025-04-02 21:50:20,700 - INFO - ScriptRunner - [SUCCESS] build_metadata_json - Completed successfully.
+2025-04-02 21:50:20,700 - INFO - ScriptRunner - [INFO] Running build_standarization_json.py...
+2025-04-02 21:50:20,775 - INFO - ScriptRunner - [INFO] - [build_standarization_json] - 
+2025-04-02 21:50:20,785 - INFO - ScriptRunner - [SUCCESS] build_standarization_json - Completed successfully.
+2025-04-02 21:50:20,785 - INFO - ScriptRunner - [INFO] Running download_macro.py...
+2025-04-02 21:50:50,013 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:50:51,760 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:50:52,600 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:51:02,816 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:51:03,454 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:51:04,070 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:51:04,682 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:51:05,288 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:51:06,117 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:51:06,627 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:51:13,426 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:51:14,921 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:51:16,049 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:51:17,384 - INFO - ScriptRunner - [INFO] - [download_macro] - 
+2025-04-02 21:51:17,514 - ERROR - ScriptRunner - [ERROR] - [download_macro] - Starting download from WorldBankAPI[0m
+2025-04-02 21:51:17,515 - ERROR - ScriptRunner - [ERROR] - [download_macro] - Starting download from IMFAPI[0m
+2025-04-02 21:51:17,515 - ERROR - ScriptRunner - [ERROR] - [download_macro] - Starting download from OECDAPI[0m
+2025-04-02 21:51:17,515 - ERROR - ScriptRunner - [ERROR] - [download_macro] - Starting download from AlphaVantageAPI[0m
+2025-04-02 21:51:17,515 - ERROR - ScriptRunner - [ERROR] - [download_macro] - data fetching and saving completed.[0m
+2025-04-02 21:51:17,515 - INFO - ScriptRunner - [SUCCESS] download_macro - Completed successfully.

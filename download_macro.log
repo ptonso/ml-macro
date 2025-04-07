@@ -11,3 +11,13 @@
 2025-03-21 13:48:39,533 - INFO - ScriptRunner - Starting download from OECDAPI
 2025-03-21 13:48:41,719 - INFO - ScriptRunner - Starting download from AlphaVantageAPI
 2025-03-21 13:48:42,202 - INFO - ScriptRunner - data fetching and saving completed.
+2025-04-02 21:27:13,239 - INFO - ScriptRunner - Starting download from WorldBankAPI
+2025-04-02 21:28:35,772 - INFO - ScriptRunner - Starting download from IMFAPI
+2025-04-02 21:28:35,772 - INFO - ScriptRunner - Starting download from OECDAPI
+2025-04-02 21:28:38,495 - INFO - ScriptRunner - Starting download from AlphaVantageAPI
+2025-04-02 21:28:39,107 - INFO - ScriptRunner - data fetching and saving completed.
+2025-04-02 21:50:21,929 - INFO - ScriptRunner - Starting download from WorldBankAPI
+2025-04-02 21:51:12,143 - INFO - ScriptRunner - Starting download from IMFAPI
+2025-04-02 21:51:12,144 - INFO - ScriptRunner - Starting download from OECDAPI
+2025-04-02 21:51:16,049 - INFO - ScriptRunner - Starting download from AlphaVantageAPI
+2025-04-02 21:51:17,384 - INFO - ScriptRunner - data fetching and saving completed.
