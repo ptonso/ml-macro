@@ -1,13 +1,16 @@
 import requests
 from src.fetch.apis.base_api import BaseAPI
+from src.logger import setup_logger
 
 
 class AlphaVantageAPI(BaseAPI):
+    source_key = "alpha_vantage"
     BASE_URL = "https://www.alphavantage.co/query"
     API_KEY = "your_alpha_vantage_api_key"  # Replace with your Alpha Vantage API key
 
-    def __init__(self, indicators, standardization, data_path):
-        super().__init__(indicators, standardization, data_path, "alpha_vantage")
+    def __init__(self, indicators, data_path):
+        self.api_name = "alpha_vantage"
+        super().__init__(indicators, data_path)
 
     def fetch_data(self, indicator, indicator_name, start_year, end_year):
         url = f"{self.BASE_URL}?function={indicator}&apikey={self.API_KEY}&datatype=json"
@@ -17,10 +20,10 @@ class AlphaVantageAPI(BaseAPI):
                 data = response.json()['Time Series (Daily)']  # Adjust based on actual JSON structure
                 return data
             except KeyError:
-                print(f"No data found for indicator: {indicator_name} (ID: {indicator})")
+                self.logger.error(f"No data found for indicator: {indicator_name} (ID: {indicator})")
                 return None
         else:
-            print(f"Failed to fetch data for indicator: {indicator_name} (ID: {indicator})")
+            self.logger.error(f"Failed to fetch data for indicator: {indicator_name} (ID: {indicator})")
             return None
 
     def get_time_series(self, start_year, end_year):

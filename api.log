@@ -37,3 +37,5 @@
 2025-03-26 22:06:14,782 - INFO - ScriptRunner - GeoData rows: 177
 2025-03-26 22:06:14,782 - INFO - ScriptRunner - GDP column non-null count: 147
 2025-03-26 22:06:14,783 - INFO - ScriptRunner - GDP column min/max: 1126313359.21923 / 27720709000000.0
+2025-04-09 21:12:55,419 - INFO - ScriptRunner - Starting Multi-CSV dashboard...
+2025-04-09 21:12:55,419 - INFO - ScriptRunner - Using cached shapefile: data/shapefiles/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp

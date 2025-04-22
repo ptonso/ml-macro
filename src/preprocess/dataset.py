@@ -1,133 +1,157 @@
-import numpy as np
-import pandas as pd
+import json
 from pathlib import Path
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
+from dataclasses import dataclass
+from functools import reduce
+
+import pandas as pd
 
 from src.utils import get_data_dir
+from src.preprocess.result import ResultData, Metadata
+from src.logger import setup_logger, setup_logging
+
+
+@dataclass
+class DatasetConfig:
+    """Configuration for data processing."""
+    data_dir: Path = get_data_dir()
+    csv_paths: List[Path] = None
+    overall_start_date: Optional[str] = None  # YYYY-MM-DD
+    overall_end_date:   Optional[str] = None  # YYYY-MM-DD
 
 
 class Dataset:
+    """High-level class for dataset handling."""
 
-    """High-level class for Dataset Handling"""
+    def __init__(self) -> None:
+        self.config = DatasetConfig()
+        setup_logging()
+        self.logger = setup_logger("dataset.log")
 
-    def __init__(self, data_dir: Path = get_data_dir()):
+        # discover all CSV files once
+        self.config.csv_paths = list(self.config.data_dir.rglob("*.csv"))
 
-        self.data_dir = data_dir
-        self.csv_paths = self._get_csv_list()
+        # internal caches
+        self._path_names_dict: Optional[Dict[Path, str]]     = None
+        self._data_dict:      Optional[Dict[str, pd.DataFrame]] = None
+        self._ml_ready:       Optional[pd.DataFrame]         = None
+        self._metadata:       Optional[Metadata]             = None
 
-        self._countries_list = None
-        self._overall_start_date = None
-        self._overall_end_date = None
+        self._overall_start_date = self._parse_date(self.config.overall_start_date)
+        self._overall_end_date   = self._parse_date(self.config.overall_end_date)
 
+    def get(self, result: ResultData = ResultData()) -> ResultData:
+        if result.path_names_dict is None:
+            result.path_names_dict = self.path_names_dict
+        if result.datadict:
+            result.datadict = self.data_dict
+        if result.ml_ready:
+            result.ml_ready = self.ml_ready
+        if result.metadata:
+            result.metadata = self.metadata
+        return result
 
-    def get_datadict(
-            self, 
-            dataset_names: Optional[List[str]] = None,
-            ) -> Dict[str, pd.DataFrame]:
-        
-        """
-        Args:
-            dataset_names: List of dataset names
-            start_date: str "YYYY-MM-DD"
-            end_date:   str "YYYY-MM-DD"
-        
-        Returns:
-            dict of datasets: {<dataset_name>: Dataframe}
-        """
-        datasets = {}
+    @property
+    def path_names_dict(self) -> Dict[Path, str]:
+        if self._path_names_dict is None:
+            mapping: Dict[Path, str] = {}
+            for p in self.config.csv_paths:
+                mapping[p] = self._extract_name(p.name)
+            self._path_names_dict = mapping
+        return self._path_names_dict
 
-        if dataset_names is None:
-            dataset_names = self.get_dataset_names()
+    @property
+    def data_dict(self) -> Dict[str, pd.DataFrame]:
+        if self._data_dict is None:
+            loaded: Dict[str, pd.DataFrame] = {}
+            for path, name in self.path_names_dict.items():
+                try:
+                    df = pd.read_csv(path, parse_dates=["date"])
+                    df.set_index("date", inplace=True)
+                    loaded[name] = df.astype("float32")
+                except Exception as e:
+                    self.logger.error(f"Failed to load {path}: {e}")
+            self._data_dict = loaded
+        return self._data_dict
 
-        for dataset_name in dataset_names:
-            try:
-                csv_path = self._get_csv_from_name(dataset_name)
-                dataframe = self._load_dataset(csv_path)
-                dataframe = self._clean_dataframe(dataframe)
-                datasets[dataset_name] = dataframe
-            except Exception as e:
-                print(f"dataset name: {dataset_name} not in path. Skipping...")
-        
-        return datasets
-    
-    def get_ml_ready(self) -> pd.DataFrame:
-        """
-        Returns a merged long-format DataFrame with all datasets joined on (date, country),
-        inserting NaN where data is missing.
-        """
-        datasets = self.get_datadict()
-        long_dfs = []
+    @property
+    def ml_ready(self) -> pd.DataFrame:
+        if self._ml_ready is None:
+            long_frames: List[pd.DataFrame] = []
+            for name, df in self.data_dict.items():
+                melted = (
+                    df
+                    .reset_index()
+                    .melt(id_vars="date", var_name="country", value_name=name)
+                )
+                long_frames.append(melted)
+            if not long_frames:
+                self._ml_ready = pd.DataFrame()
+            else:
+                merged = reduce(
+                    lambda L, R: pd.merge(L, R, on=["date", "country"], how="outer"),
+                    long_frames
+                )
+                self._ml_ready = merged.sort_values(["date", "country"]).reset_index(drop=True)
+        return self._ml_ready
 
-        for name, df in datasets.items():
-            df = df.copy()
-
-            df = df.reset_index()
-
-            # Melt wide → long
-            df_long = df.melt(
-                id_vars="date",
-                var_name="country",
-                value_name=name  # Feature name from dataset
+    @property
+    def metadata(self) -> Metadata:
+        if self._metadata is None:
+            self._metadata = Metadata(
+                category_dict      = self._build_category_dict(),
+                countries          = self._load_countries(),
+                indicators         = self._load_indicators(),
+                overall_start_date = self._format_date(self._overall_start_date),
+                overall_end_date   = self._format_date(self._overall_end_date),
             )
+        return self._metadata
 
-            long_dfs.append(df_long)
+    def _extract_name(self, filename: str) -> str:
+        base = Path(filename).stem
+        return base.replace("_world_bank", "").lower()
 
-        # Merge all datasets on ['date', 'country'] using outer join
-        from functools import reduce
-        ml_df = reduce(lambda left, right: pd.merge(left, right, on=["date", "country"], how="outer"), long_dfs)
+    def _build_category_dict(self) -> Dict[str, str]:
+        cats: Dict[str, str] = {}
+        for path, name in self.path_names_dict.items():
+            cat = path.parent.name
+            if cat not in cats:
+                cats[cat] = name
+        return cats
 
-        ml_df = ml_df.sort_values(by=["date", "country"]).reset_index(drop=True)
+    def _load_countries(self) -> Dict[str, Any]:
+        p = self.config.data_dir / "10--metadata" / "countries.json"
+        try:
+            with open(p) as f:
+                return json.load(f)
+        except Exception as e:
+            self.logger.error(f"Error loading countries.json: {e}")
+            return {}
 
-        return ml_df
+    def _load_indicators(self) -> Dict[str, Any]:
+        p = self.config.data_dir / "10--metadata" / "indicators.json"
+        try:
+            with open(p) as f:
+                return json.load(f)
+        except Exception as e:
+            self.logger.error(f"Error loading indicators.json: {e}")
+            return {}
 
+    def _parse_date(self, date_str: Optional[str]) -> Optional[pd.Timestamp]:
+        if not date_str:
+            return None
+        try:
+            return pd.to_datetime(date_str, format="%Y-%m-%d")
+        except Exception as e:
+            self.logger.error(f"Error parsing date '{date_str}': {e}")
+            return None
 
+    def _format_date(self, ts: Optional[pd.Timestamp]) -> Optional[str]:
+        return ts.strftime("%Y-%m-%d") if ts is not None else None
 
-    def get_dataset_names(self) -> List[str]:
-        """Return list of dataset names"""
-        dataset_names = []
-        for csv_path in self.csv_paths:
-            dataset_name = csv_path.name.split(".csv")[0]
-            dataset_names.append(dataset_name)
-        return dataset_names
-
-
-    def get_category_names(self) -> List[str]:
-        """Return list o categories names"""
-        categories_list = []
-        for csv_path in self.csv_paths:
-            csv_dir = csv_path.parent.name
-            if csv_dir not in categories_list:
-                categories_list.append(csv_dir)
-        return categories_list
-
-
-    def _load_dataset(self, csv_path: Path) -> pd.DataFrame:
-        df = pd.read_csv(csv_path, parse_dates=['date'])
-        df.set_index('date', inplace=True)
-        df = df.astype('float32')
-        return df
-
-    def _clean_dataframe(self, dataframe: pd.DataFrame) -> pd.DataFrame:
-        return dataframe
-
-    def _get_csv_from_name(self, dataset_name) -> Path:
-        for path in self.csv_paths:
-            if path.name.split(".csv")[0] == dataset_name:
-                return path
-        return None
-
-    def _get_csv_list(self) -> List[Path]:
-        """Return list of csv paths in data dir"""
-        csv_list = []
-        for file in self.data_dir.rglob("*.csv"):
-            csv_list.append(Path(file))
-        return csv_list
-    
 
 
 if __name__ == "__main__":
     dataset = Dataset()
-
-    ml_df = dataset.ml_ready()
-
+    ml_df = dataset.get_ml_ready()
     print(ml_df)

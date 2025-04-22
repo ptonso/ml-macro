@@ -1,4 +1,21 @@
-from common.fetch.api import API
+from src.fetch.apis import BRGovAPI
+from src.utils import get_data_dir
+from src.logger import setup_logger
+
+
+def main():
+    logger = setup_logger()    
+    parent = get_data_dir() / "00--raw/macro"
+    index_csv = parent / "indexes.csv"
+
+    start_date = "2000-01-01"
+
+    logger.info("downloading data...")
+
+    api = BRGovAPI(csv_path=index_csv)
+    api.save_indexes_csv(series_codes, start_date, last_date=None)
+
+
 
 
 series_codes = [
@@ -287,14 +304,5 @@ series_codes = [
 
 if __name__ == "__main__":
 
-
-    parent = get_data_dir() / "00--raw/macro"
-    index_csv = parent / "indexes.csv"
-
-    start_date = "2000-01-01"
-
-    print("downloading data...")
-
-    api = API(csv_path=index_csv)
-    api.save_indexes_csv(series_codes, start_date, last_date=None)
+    main()
 
