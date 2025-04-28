@@ -7,7 +7,6 @@ import zipfile
 import requests
 import tempfile
 import random
-from collections import defaultdict
 
 from bokeh.io import curdoc
 from bokeh.models import (
@@ -21,7 +20,7 @@ from bokeh.plotting import figure
 from bokeh.layouts import column, row, layout, Spacer
 from bokeh.palettes import Category10, Category20
 
-from src.logger import setup_logger
+from src.logger import setup_logger, setup_logging
 from src.utils import get_data_dir
 
 class WorldTimeConfig:
@@ -127,6 +126,7 @@ def safe_log_transform(value):
 class MultiDashboard:
     def __init__(self, config):
         self.config = config
+        setup_logging()
         self.logger = setup_logger(self.config.log_file)
 
         self.df = None
@@ -164,7 +164,8 @@ class MultiDashboard:
         self.dashboard_select = None
 
         self.sidebar_width = 250
-        self.main_content_width = 1200
+        self.main_content_width = 950
+        self.main_content_height = 430
         self.color_bar = None
         
         self.current_view = 0
@@ -484,7 +485,7 @@ class MultiDashboard:
             toolbar_location=None,
             tools="hover",
             width=self.main_content_width,
-            height=700,
+            height=self.main_content_height,
             match_aspect=True
         )
         hover = p.select_one(HoverTool)
@@ -509,7 +510,7 @@ class MultiDashboard:
             title="Trend for Top 10 Countries",
             toolbar_location="right",
             width=self.main_content_width,
-            height=600,
+            height=self.main_content_height,
             tools="pan,wheel_zoom,box_zoom,reset,save"
         )
         
@@ -717,3 +718,6 @@ config = WorldTimeConfig(
 
 dashboard = MultiDashboard(config)
 dashboard.run()
+
+
+# python3 -m bokeh serve src/dashboard/world_year.py --show

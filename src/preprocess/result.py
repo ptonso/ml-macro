@@ -4,9 +4,6 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass
 
-from src.utils import get_data_dir
-
-
 
 # give a instance with true in desire formats
 @dataclass
@@ -20,9 +17,10 @@ class ResultData:
 
 @dataclass
 class Metadata:
-    category_dict      :  Dict[str, str]  # {"demography": "eonomic_activity", ...}
-    countries          :  Dict[str, Any]  # consult `data/10--metadata/countries.json`
-    indicators         :  Dict[str, Any]  # consult `data/10--metadata/indicator.json`
-    overall_start_date :  str             # <YYYY-MM-DD>
-    overall_end_date   :  str             # <YYYY-MM-DD>
+    category_dict      :  Dict[str, str]       # {"demography": "eonomic_activity", ...}
+    countries          :  Dict[str, Any]       # consult `data/10--metadata/countries.json`
+    indicators         :  Dict[str, Any]       # consult `data/10--metadata/indicator.json`
+    overall_start_date :  str                  # <YYYY-MM-DD>
+    overall_end_date   :  str                  # <YYYY-MM-DD>
+
 

@@ -63,15 +63,52 @@ class Dataset:
     @property
     def data_dict(self) -> Dict[str, pd.DataFrame]:
         if self._data_dict is None:
+            countries_meta = self._load_countries()
+            alias_map = {
+                alias: canon
+                for canon, info in countries_meta.items()
+                for alias in info["aliases"]
+            }
+            canonical = list(countries_meta.keys())
+
             loaded: Dict[str, pd.DataFrame] = {}
             for path, name in self.path_names_dict.items():
                 try:
-                    df = pd.read_csv(path, parse_dates=["date"])
-                    df.set_index("date", inplace=True)
-                    loaded[name] = df.astype("float32")
+                    # read & parse
+                    df = (
+                        pd.read_csv(path, parse_dates=["date"])
+                        .set_index("date")
+                        .rename(columns=alias_map)
+                    )
+                    # drop non-canonical columns, then reindex in canonical order
+                    df = df.loc[:, df.columns.isin(canonical)]
+                    df = df.reindex(columns=canonical)
+
+                    # cast & sort
+                    df = df.astype("float32").sort_index()
+                    loaded[name] = df
+
                 except Exception as e:
                     self.logger.error(f"Failed to load {path}: {e}")
+            
+            if not loaded:
+                self._data_dict = {}
+                return self._data_dict
+            
+            # compute full union date range
+            all_starts  = [df.index.min() for df in loaded.values()]
+            all_ends    = [df.index.max() for df in loaded.values()]
+            union_start = min(all_starts)
+            union_end   = max(all_ends)
+
+            full_idx = pd.date_range(union_start, union_end, freq="YS")
+            full_idx.name = "date"
+
+            for name, df in loaded.items():
+                loaded[name] = df.reindex(full_idx)
+
             self._data_dict = loaded
+
         return self._data_dict
 
     @property
@@ -115,8 +152,7 @@ class Dataset:
         cats: Dict[str, str] = {}
         for path, name in self.path_names_dict.items():
             cat = path.parent.name
-            if cat not in cats:
-                cats[cat] = name
+            cats[name] = cat
         return cats
 
     def _load_countries(self) -> Dict[str, Any]:
