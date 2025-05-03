@@ -78,8 +78,20 @@ class Dataset:
                     df = (
                         pd.read_csv(path, parse_dates=["date"])
                         .set_index("date")
-                        .rename(columns=alias_map)
                     )
+                    df.columns = (
+                        df.columns
+                            .str.strip()
+                            .str.lower()
+                            .str.replace(r"[^\w]+", "_", regex=True)
+                            .str.replace(r"_+", "_", regex=True)
+                            .str.strip("_")
+                        )
+
+                    df = df.rename(columns=alias_map)
+
+                    df = df.T.groupby(level=0).first().T
+
                     # drop non-canonical columns, then reindex in canonical order
                     df = df.loc[:, df.columns.isin(canonical)]
                     df = df.reindex(columns=canonical)
