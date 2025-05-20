@@ -1,12 +1,14 @@
 import json
+import torch
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import *
 from dataclasses import dataclass
 from functools import reduce
 
 import pandas as pd
+import numpy as np
 
-from src.utils import get_data_dir
+from src.utils import *
 from src.preprocess.result import ResultData, Metadata
 from src.logger import setup_logger, setup_logging
 
@@ -14,22 +16,32 @@ from src.logger import setup_logger, setup_logging
 @dataclass
 class DatasetConfig:
     """Configuration for data processing."""
-    data_dir: Path = get_data_dir()
+    data_dir:  Path = get_data_dir()
+    raw_dir:   Path = get_raw_dir()
+    clean_dir: Path = get_clean_dir()
     csv_paths: List[Path] = None
     overall_start_date: Optional[str] = None  # YYYY-MM-DD
     overall_end_date:   Optional[str] = None  # YYYY-MM-DD
+    use_raw:            bool          = False
 
 
 class Dataset:
     """High-level class for dataset handling."""
 
-    def __init__(self) -> None:
-        self.config = DatasetConfig()
+    def __init__(self, config:Optional[DatasetConfig] = None) -> None:
+        self.config = config
+        if config is None:
+            self.config = DatasetConfig()
+
         setup_logging()
         self.logger = setup_logger("dataset.log")
 
+        if self.config.use_raw:
+            self.data_dir = self.config.raw_dir
+        else:
+            self.data_dir = self.config.clean_dir
         # discover all CSV files once
-        self.config.csv_paths = list(self.config.data_dir.rglob("*.csv"))
+        self.config.csv_paths = list(self.data_dir.rglob("*.csv"))
 
         # internal caches
         self._path_names_dict: Optional[Dict[Path, str]]     = None
@@ -168,7 +180,7 @@ class Dataset:
         return cats
 
     def _load_countries(self) -> Dict[str, Any]:
-        p = self.config.data_dir / "10--metadata" / "countries.json"
+        p = get_metadata_dir() / "countries.json"
         try:
             with open(p) as f:
                 return json.load(f)
@@ -177,7 +189,7 @@ class Dataset:
             return {}
 
     def _load_indicators(self) -> Dict[str, Any]:
-        p = self.config.data_dir / "10--metadata" / "indicators.json"
+        p = get_metadata_dir() / "indicators.json"
         try:
             with open(p) as f:
                 return json.load(f)

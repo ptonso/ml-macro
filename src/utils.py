@@ -8,6 +8,16 @@ def get_project_dir() -> Path:
 def get_data_dir() -> Path:
     return get_project_dir() / "data"
 
+def get_raw_dir() -> Path:
+    return get_data_dir() / "00--raw"
+
+def get_clean_dir() -> Path:
+    return get_data_dir() / "01--clean"
+
+def get_metadata_dir() -> Path:
+    return get_data_dir() / "10--metadata"
+
+
 def get_metadata_dir() -> Path:
     return get_data_dir() / "10--metadata"
 
