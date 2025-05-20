@@ -128,10 +128,16 @@ class Dataset:
             full_idx = pd.date_range(union_start, union_end, freq="YS")
             full_idx.name = "date"
 
+            pruned: Dict[str, pd.DataFrame] = {}
             for name, df in loaded.items():
-                loaded[name] = df.reindex(full_idx)
+                df2 = df.reindex(full_idx)
+                # drop any country-column entirely NaN
+                df2 = df2.dropna(axis=1, how="all")
+                # only keep features that have at least one country
+                if df2.shape[1] > 0:
+                    pruned[name] = df2
 
-            self._data_dict = loaded
+            self._data_dict = pruned
 
         return self._data_dict
 

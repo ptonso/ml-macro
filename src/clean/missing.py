@@ -13,9 +13,7 @@ def compute_feature_yearly_missing(
       – M.loc[f, y] = proportion of missing values in feature f for year y
                      (averaged over all countries).
     """
-    # pick one DataFrame to get the full list of years
     sample_df = next(iter(datadict.values()))
-    # ensure its index is datetime, then extract years
     if not pd.api.types.is_datetime64_any_dtype(sample_df.index):
         try:
             sample_df.index = pd.to_datetime(sample_df.index, format="%Y")
@@ -23,7 +21,6 @@ def compute_feature_yearly_missing(
             sample_df.index = pd.to_datetime(sample_df.index)
     years = sorted(sample_df.index.year.unique())
 
-    # prepare result
     heatmap = pd.DataFrame(index=datadict.keys(), columns=years, dtype=float)
 
     for feature, df in datadict.items():
@@ -35,14 +32,9 @@ def compute_feature_yearly_missing(
             except:
                 df2.index = pd.to_datetime(df2.index)
 
-        # boolean: True where missing
         missing_flags = df2.isna()
-        # group by calendar year, take mean over rows → proportion missing *per country* each year
         yearly_country = missing_flags.groupby(df2.index.year).mean()
-        # then average across countries to get one number per year
-        # (some years may be missing entirely, those stay NaN)
         heatmap.loc[feature, yearly_country.index] = yearly_country.mean(axis=1).values
-
     return heatmap
 
 
@@ -83,14 +75,12 @@ def plot_country_missing_for_feature(
         raise KeyError(f"Feature {feature!r} not in your datadict")
 
     df = datadict[feature].copy()
-    # fix the index to datetime years
     if not pd.api.types.is_datetime64_any_dtype(df.index):
         try:
             df.index = pd.to_datetime(df.index, format="%Y")
         except:
             df.index = pd.to_datetime(df.index)
 
-    # boolean missing flags, then transpose → countries × years
     mat = df.isna().T.astype(int)
     years = mat.columns.year if hasattr(mat.columns, "year") else mat.columns
     countries = mat.index
@@ -119,30 +109,23 @@ def compute_country_yearly_missing(
       – C.loc[c, y] = proportion of features that are missing
                      for country c in year y.
     """
-    # 1) for each feature, build a years×countries %‐missing matrix
     per_feature = []
     for df in datadict.values():
         df2 = df.copy()
-        # ensure datetime index
         if not pd.api.types.is_datetime64_any_dtype(df2.index):
             try:
                 df2.index = pd.to_datetime(df2.index, format="%Y")
             except:
                 df2.index = pd.to_datetime(df2.index)
-        # boolean missing flags
         missing = df2.isna()
-        # group by calendar‐year, then mean over rows → proportion missing *per country* each year
         yearly = missing.groupby(df2.index.year).mean()
         per_feature.append(yearly)
 
-    # 2) stack them: sum then divide by number of features → years×countries
     total = sum(per_feature)
     avg    = total / len(per_feature)
 
-    # 3) transpose → countries×years
     heatmap = avg.T
 
-    # 4) re‐order rows & columns
     years     = sorted(avg.index)
     countries = sorted(heatmap.index)
     heatmap   = heatmap.loc[countries, years]
