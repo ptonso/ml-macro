@@ -1,12 +1,9 @@
 import json
-import torch
 from pathlib import Path
 from typing import *
 from dataclasses import dataclass
 from functools import reduce
-
 import pandas as pd
-import numpy as np
 
 from src.utils import *
 from src.preprocess.result import ResultData, Metadata
@@ -29,9 +26,9 @@ class Dataset:
     """High-level class for dataset handling."""
 
     def __init__(self, config:Optional[DatasetConfig] = None) -> None:
-        self.config = config
         if config is None:
-            self.config = DatasetConfig()
+            config = DatasetConfig()
+        self.config = config 
 
         setup_logging()
         self.logger = setup_logger("dataset.log")
@@ -55,11 +52,11 @@ class Dataset:
     def get(self, result: ResultData = ResultData()) -> ResultData:
         if result.path_names_dict is None:
             result.path_names_dict = self.path_names_dict
-        if result.datadict:
+        if result.datadict is not False:
             result.datadict = self.data_dict
-        if result.ml_ready:
+        if result.ml_ready is not False:
             result.ml_ready = self.ml_ready
-        if result.metadata:
+        if result.metadata is not False:
             result.metadata = self.metadata
         return result
 
@@ -128,16 +125,21 @@ class Dataset:
             full_idx = pd.date_range(union_start, union_end, freq="YS")
             full_idx.name = "date"
 
-            pruned: Dict[str, pd.DataFrame] = {}
             for name, df in loaded.items():
-                df2 = df.reindex(full_idx)
-                # drop any country-column entirely NaN
-                df2 = df2.dropna(axis=1, how="all")
-                # only keep features that have at least one country
-                if df2.shape[1] > 0:
-                    pruned[name] = df2
+                loaded[name] = df.reindex(full_idx)
+            
+            self._data_dict = loaded
 
-            self._data_dict = pruned
+            if not self.config.use_raw:
+                pruned: Dict[str, pd.DataFrame] = {}
+                for name, df in loaded.items():
+                    df2 = df.reindex(full_idx)
+                    # drop any country-column entirely NaN
+                    df2 = df2.dropna(axis=1, how="all")
+                    # only keep features that have at least one country
+                    if df2.shape[1] > 0:
+                        pruned[name] = df2
+                self._data_dict = pruned
 
         return self._data_dict
 
