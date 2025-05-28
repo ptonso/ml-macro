@@ -1,6 +1,7 @@
 # Data
 data/00--raw/*
-data/01--clean/*
+data/01--filter/*
+data/02--clean/*
 data/02--ml-ready/*
 data/10--metadata/*
 data/shapefiles/*
