@@ -1,0 +1,23 @@
+2025-03-20 21:21:39,368 - INFO - ScriptRunner - [INFO] Starting download from WorldBankAPI
+2025-03-20 21:22:04,301 - INFO - ScriptRunner - Starting download from WorldBankAPI
+2025-03-20 21:28:36,617 - ERROR - ScriptRunner - downloading from WorldBankAPI: HTTPConnectionPool(host='api.worldbank.org', port=80): Max retries exceeded with url: /v2/country/all/indicator/SL.UEM.TOTL.ZS?date=1900:2030&format=json&per_page=20000 (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fad12ec8040>: Failed to establish a new connection: [Errno 101] Network is unreachable'))
+2025-03-20 21:28:36,617 - INFO - ScriptRunner - Starting download from IMFAPI
+2025-03-20 21:28:36,617 - INFO - ScriptRunner - Starting download from OECDAPI
+2025-03-20 21:30:47,693 - ERROR - ScriptRunner - downloading from OECDAPI: HTTPSConnectionPool(host='stats.oecd.org', port=443): Max retries exceeded with url: /SDMX-JSON/data/IR3TIB01/all?startTime=1900&endTime=2030 (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x7fad12ec9ba0>, 'Connection to stats.oecd.org timed out. (connect timeout=None)'))
+2025-03-20 21:30:47,693 - INFO - ScriptRunner - Starting download from AlphaVantageAPI
+2025-03-20 21:32:59,296 - INFO - ScriptRunner - data fetching and saving completed.
+2025-03-21 13:47:43,046 - INFO - ScriptRunner - Starting download from WorldBankAPI
+2025-03-21 13:48:39,533 - INFO - ScriptRunner - Starting download from IMFAPI
+2025-03-21 13:48:39,533 - INFO - ScriptRunner - Starting download from OECDAPI
+2025-03-21 13:48:41,719 - INFO - ScriptRunner - Starting download from AlphaVantageAPI
+2025-03-21 13:48:42,202 - INFO - ScriptRunner - data fetching and saving completed.
+2025-04-02 21:27:13,239 - INFO - ScriptRunner - Starting download from WorldBankAPI
+2025-04-02 21:28:35,772 - INFO - ScriptRunner - Starting download from IMFAPI
+2025-04-02 21:28:35,772 - INFO - ScriptRunner - Starting download from OECDAPI
+2025-04-02 21:28:38,495 - INFO - ScriptRunner - Starting download from AlphaVantageAPI
+2025-04-02 21:28:39,107 - INFO - ScriptRunner - data fetching and saving completed.
+2025-04-02 21:50:21,929 - INFO - ScriptRunner - Starting download from WorldBankAPI
+2025-04-02 21:51:12,143 - INFO - ScriptRunner - Starting download from IMFAPI
+2025-04-02 21:51:12,144 - INFO - ScriptRunner - Starting download from OECDAPI
+2025-04-02 21:51:16,049 - INFO - ScriptRunner - Starting download from AlphaVantageAPI
+2025-04-02 21:51:17,384 - INFO - ScriptRunner - data fetching and saving completed.
