@@ -62,8 +62,8 @@ class ModelLoaders:
         )
 
         cfg = ForecastConfig(
-            window_size   = 5,
-            horizon       = 15,
+            window_size   = 1,
+            horizon       = 1,
             feat_cols     = feat_cols,
             label_col     = label_col,
             group_col     = "country",
