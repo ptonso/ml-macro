@@ -3,6 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from typing import Dict
 
+
+DPI:  int = 150
+CMAP: str = "cividis" # ["viridis", "cividis", "magma", "inferno", "YlGnBu", "rocket"]
+
 def compute_feature_yearly_missing(
     datadict: Dict[str, pd.DataFrame]
 ) -> pd.DataFrame:
@@ -38,26 +42,20 @@ def compute_feature_yearly_missing(
     return heatmap
 
 
+
 def plot_feature_missing_heatmap(heatmap: pd.DataFrame):
-    """
-    Given the DataFrame produced by compute_feature_yearly_missing,
-    plots a heatmap with
-      – x axis = year
-      – y axis = feature
-      – color = proportion missing
-    """
-    plt.figure(figsize=(len(heatmap.columns) * 0.5 + 2,
-                        len(heatmap.index) * 0.3 + 2))
-    # imshow wants a numpy array
-    data = heatmap.values.astype(float)
-    img = plt.imshow(data, aspect="auto", origin="lower")
-    plt.xticks(np.arange(len(heatmap.columns)), heatmap.columns, rotation=90)
-    plt.yticks(np.arange(len(heatmap.index)), heatmap.index)
-    plt.xlabel("Year")
-    plt.ylabel("Feature")
-    plt.title("Proportion of Missing Values\nby Feature and Year")
-    plt.colorbar(img, label="Missing proportion")
-    plt.tight_layout()
+    plt.figure(
+        figsize=(len(heatmap.columns)*0.5+1, len(heatmap.index)*0.25+1),
+        dpi=DPI
+    )
+    img = plt.imshow(heatmap.values, aspect="auto", origin="lower", cmap=CMAP)
+    plt.xticks(np.arange(len(heatmap.columns)), heatmap.columns, rotation=90, fontsize=8)
+    plt.yticks(np.arange(len(heatmap.index)), heatmap.index, fontsize=8)
+    plt.xlabel("Year", fontsize=10)
+    plt.ylabel("Feature", fontsize=10)
+    plt.title("Missingness by Feature & Year", fontsize=12)
+    plt.colorbar()
+    plt.tight_layout(pad=0.5)
     plt.show()
 
 
@@ -85,16 +83,19 @@ def plot_country_missing_for_feature(
     years = mat.columns.year if hasattr(mat.columns, "year") else mat.columns
     countries = mat.index
 
-    plt.figure(figsize=(len(years) * 0.3 + 2,
-                        len(countries) * 0.2 + 2))
-    img = plt.imshow(mat.values, aspect="auto", origin="lower")
+    plt.figure(
+        figsize=(len(years) * 0.3 + 2,
+                len(countries) * 0.2 + 2),
+                dpi=DPI
+                )
+    img = plt.imshow(mat.values, aspect="auto", origin="lower", cmap=CMAP)
     plt.xticks(np.arange(len(years)), years, rotation=90)
     plt.yticks(np.arange(len(countries)), countries)
-    plt.xlabel("Year")
-    plt.ylabel("Country")
-    plt.title(f"Missingness for feature {feature!r}")
-    plt.colorbar(img, label="Missing=1  Present=0")
-    plt.tight_layout()
+    plt.xlabel("Year", fontsize=10)
+    plt.ylabel("Feature", fontsize=10)
+    plt.title(f"Missingness for feature {feature!r}", fontsize=12)
+    plt.colorbar()
+    plt.tight_layout(pad=0.5)
     plt.show()
 
 
@@ -144,11 +145,12 @@ def plot_country_missing_heatmap(heatmap: pd.DataFrame):
     plt.figure(
         figsize=(
             len(heatmap.columns) * 0.5 + 2,
-            len(heatmap.index)   * 0.2 + 2
-        )
+            len(heatmap.index)   * 0.2 + 2,
+        ),
+        dpi=DPI
     )
     data = heatmap.values.astype(float)
-    img  = plt.imshow(data, aspect="auto", origin="lower")
+    img  = plt.imshow(data, aspect="auto", origin="lower", cmap=CMAP)
     plt.xticks(
         np.arange(len(heatmap.columns)),
         heatmap.columns,
@@ -158,9 +160,12 @@ def plot_country_missing_heatmap(heatmap: pd.DataFrame):
         np.arange(len(heatmap.index)),
         heatmap.index
     )
-    plt.xlabel("Year")
-    plt.ylabel("Country")
-    plt.title("Proportion of Features Missing\nby Country and Year")
-    plt.colorbar(img, label="Missing proportion")
-    plt.tight_layout()
+
+    plt.xlabel("Year", fontsize=10)
+    plt.ylabel("Country", fontsize=10)
+    plt.title("Proportion of Features Missing\nby Country and Year", fontsize=12)
+    plt.tight_layout(pad=0.5)
+    plt.colorbar()
     plt.show()
+
+

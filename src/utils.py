@@ -11,8 +11,12 @@ def get_data_dir() -> Path:
 def get_raw_dir() -> Path:
     return get_data_dir() / "00--raw"
 
+def get_filter_dir() -> Path:
+    return get_data_dir() / "01--filter"
+
+
 def get_clean_dir() -> Path:
-    return get_data_dir() / "01--clean"
+    return get_data_dir() / "02--clean"
 
 def get_metadata_dir() -> Path:
     return get_data_dir() / "10--metadata"

@@ -135,6 +135,7 @@ cfg = WorldTimeConfig(
 )
 app = MultiDashboard(cfg)
 app.run()
+print("run with: python3 -m bokeh serve src/dashboard --show --port 5007")
 
 
 

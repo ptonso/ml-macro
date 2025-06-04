@@ -13,13 +13,14 @@ from src.logger import setup_logger, setup_logging
 @dataclass
 class DatasetConfig:
     """Configuration for data processing."""
-    data_dir:  Path = get_data_dir()
-    raw_dir:   Path = get_raw_dir()
+    data_dir:   Path = get_data_dir()
+    raw_dir:    Path = get_raw_dir()
+    filter_dir: Path = get_filter_dir()
     clean_dir: Path = get_clean_dir()
     csv_paths: List[Path] = None
     overall_start_date: Optional[str] = None  # YYYY-MM-DD
     overall_end_date:   Optional[str] = None  # YYYY-MM-DD
-    use_raw:            bool          = False
+    type: Literal["raw", "filter", "clean"] = "clean"
 
 
 class Dataset:
@@ -33,9 +34,11 @@ class Dataset:
         setup_logging()
         self.logger = setup_logger("dataset.log")
 
-        if self.config.use_raw:
+        if self.config.type == "raw":
             self.data_dir = self.config.raw_dir
-        else:
+        elif self.config.type == "filter":
+            self.data_dir = self.config.filter_dir
+        elif self.config.type == "clean":
             self.data_dir = self.config.clean_dir
         # discover all CSV files once
         self.config.csv_paths = list(self.data_dir.rglob("*.csv"))
@@ -49,7 +52,19 @@ class Dataset:
         self._overall_start_date = self._parse_date(self.config.overall_start_date)
         self._overall_end_date   = self._parse_date(self.config.overall_end_date)
 
-    def get(self, result: ResultData = ResultData()) -> ResultData:
+    def get(
+            self, 
+            datadict: bool = True,
+            ml_ready: bool = True,
+            metadata: bool = True,
+        ) -> ResultData:
+        
+        result = ResultData(
+            path_names_dict=None,
+            datadict=datadict,
+            ml_ready=ml_ready,
+            metadata=metadata
+            )
         if result.path_names_dict is None:
             result.path_names_dict = self.path_names_dict
         if result.datadict is not False:
@@ -130,7 +145,7 @@ class Dataset:
             
             self._data_dict = loaded
 
-            if not self.config.use_raw:
+            if not self.config.type == "raw":
                 pruned: Dict[str, pd.DataFrame] = {}
                 for name, df in loaded.items():
                     df2 = df.reindex(full_idx)

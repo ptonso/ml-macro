@@ -1,5 +1,6 @@
 # src/trainers/forecast_trainer.py
 import torch
+import torch.nn.functional as F
 from torch.optim import Adam
 from torch.nn import MSELoss
 from typing import *
@@ -9,10 +10,11 @@ from src.preprocess.forecast_dataset import (
     ForecastDataset
 )
 from src.model.forecast import LSTMForecaster, ForecastModelConfig
-from src.logger import setup_logger
+from src.logger import setup_logger, setup_logging
 import pandas as pd
 from torch.utils.data import DataLoader
 
+setup_logging()
 logger = setup_logger("train_forecast.log")
 
 
@@ -98,3 +100,55 @@ def train_forecast(
         )
 
     return model, (train_loader, val_loader, test_loader)
+
+
+import torch.nn as nn
+import numpy as np
+from sklearn.metrics import mean_squared_error, r2_score
+
+def test_result(
+    model: LSTMForecaster,
+    test_loader: DataLoader,
+    device: str = "cuda",
+) -> Tuple[np.ndarray, np.ndarray]:
+    device     = device or next(model.parameters()).device
+    model      = model.to(device).eval()
+    criterion  = torch.nn.MSELoss(reduction="mean")
+
+    all_preds   = []
+    all_targets = []
+    total_loss  = 0.0
+    total_samples = 0
+
+    with torch.no_grad():
+        for X_batch, y_batch in test_loader:
+            X_batch = X_batch.to(device)         # [B, k, F]
+            y_batch = y_batch.to(device)         # [B, H]
+
+            preds = model(X_batch)               # [B, H]
+            loss  = criterion(preds, y_batch)    # compare [B, H] vs [B, H]
+
+            batch_size = X_batch.size(0)
+            total_loss += loss.item() * batch_size
+            total_samples += batch_size
+
+            all_preds.append(preds.cpu())        # store [B, H]
+            all_targets.append(y_batch.cpu())    # store [B, H]
+
+    mse  = total_loss / total_samples
+    rmse = mse ** 0.5
+
+    y_true = torch.cat(all_targets, dim=0).numpy()  # shape: [N, H]
+    y_pred = torch.cat(all_preds,   dim=0).numpy()  # shape: [N, H]
+
+    from sklearn.metrics import r2_score
+    # If you want an overall R² across all flattened entries:
+    flat_true = y_true.reshape(-1)
+    flat_pred = y_pred.reshape(-1)
+    r2 = r2_score(flat_true, flat_pred)
+
+    print(f"Test  MSE : {mse:.6f}")
+    print(f"Test  RMSE: {rmse:.6f}")
+    print(f"Test  R²  : {r2:.4f}")
+
+    return y_true, y_pred

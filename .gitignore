@@ -5,6 +5,8 @@ data/02--clean/*
 data/02--ml-ready/*
 data/10--metadata/*
 data/shapefiles/*
+data/20--model/*
+reports/*
 
 # Experiments
 experiments/*
