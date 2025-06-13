@@ -1,4 +1,3 @@
-# src/dashboard/config.py
 from pathlib import Path
 from dataclasses import dataclass
 

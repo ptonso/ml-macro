@@ -32,13 +32,48 @@ def mean_absolute_percentage_error(y_true, y_pred):
 
 def load_and_prepare_data(file_path):
     """
-    Carrega dados de um CSV, assumindo que ele tem uma coluna 'year' para ser o índice.
+    Carrega os dados de um arquivo CSV e prepara o índice 'Year'.
     """
-    try:
-        return pd.read_csv(file_path, index_col='year')
-    except FileNotFoundError:
-        print(f"Erro: Arquivo '{file_path}' não encontrado.")
+    data_yearly = pd.read_csv(file_path)
+    print(f"Dados carregados de '{file_path}'.")
+
+    unnamed_cols = [col for col in data_yearly.columns if 'Unnamed:' in col]
+    if unnamed_cols:
+        if 'Unnamed: 0' in unnamed_cols and 'Year' not in data_yearly.columns and 'year' not in data_yearly.columns:
+            try:
+                if 1900 <= data_yearly['Unnamed: 0'].iloc[0] <= 2050:
+                    print("Renomeando 'Unnamed: 0' para 'Year'.")
+                    data_yearly = data_yearly.rename(columns={'Unnamed: 0': 'Year'})
+                    unnamed_cols.remove('Unnamed: 0')
+            except Exception as e:
+                print(f"Aviso: Não foi possível usar 'Unnamed: 0' como ano: {e}")
+
+        if unnamed_cols:
+            print(f"Removendo colunas 'Unnamed': {unnamed_cols}")
+            data_yearly = data_yearly.drop(columns=unnamed_cols)
+
+    year_col_found = None
+    for col_name in ['Year', 'year']:
+        if col_name in data_yearly.columns:
+            year_col_found = col_name
+            break
+
+    if year_col_found:
+        print(f"Usando '{year_col_found}' como índice.")
+        data_yearly = data_yearly.set_index(year_col_found)
+        if 'year' in data_yearly.columns and year_col_found != 'year':
+            data_yearly = data_yearly.drop('year', axis=1)
+    elif data_yearly.shape[0] >= 10:
+        start_year = pd.Timestamp.now().year - data_yearly.shape[0] + 1
+        end_year = pd.Timestamp.now().year
+        print(f"Aviso: Coluna de ano não encontrada. Assumindo índice como {start_year}-{end_year}.")
+        data_yearly.index = range(start_year, end_year + 1)
+        data_yearly.index.name = 'Year'
+    else:
+        print("Erro: Não foi possível determinar o índice 'Year'.")
         return None
+
+    return data_yearly
 
 def engineer_features(df, target_variable):
     """
@@ -51,7 +86,8 @@ def engineer_features(df, target_variable):
     df_features = pd.DataFrame(index=df.index)
     for col in df.columns:
         df_features[f'{col}_lag1'] = df[col].shift(1)
-        df_features[f'{col}_lag1_sq'] = df_features[f'{col}_lag1'] ** 2
+        
+        # df_features[f'{col}_lag1sq'] = df[col].shift(1) ** 2
 
     df_features[target_variable] = df[target_variable]
     df_features.replace([np.inf, -np.inf], np.nan, inplace=True)
