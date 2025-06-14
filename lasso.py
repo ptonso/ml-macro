@@ -245,3 +245,61 @@ def plot_coefficients(model, feature_names):
         plt.xlabel('Valor do Coeficiente Padronizado')
         plt.tight_layout()
         plt.show()
+
+def predict_future(model, df_original, x_scaler, y_scaler, feature_names, future_year=2025):
+    """
+    Prevê um valor futuro (ex: 2025) usando os dados do ano anterior.
+    """
+    print(f"\n--- Preparando para prever o ano de {future_year} ---")
+    
+    last_known_year = df_original.index.max()
+    if last_known_year != future_year - 1:
+        print(f"AVISO: O último ano nos dados é {last_known_year}, mas estamos usando-o para prever {future_year}.")
+
+    # 1. Obter os dados do último ano disponível
+    last_year_data = df_original.loc[last_known_year]
+    
+    # 2. Criar o vetor de features para a previsão
+    future_features = {f'{col}_lag1': val for col, val in last_year_data.items()}
+    future_input_df = pd.DataFrame([future_features], columns=feature_names)
+
+    # 3. Padronizar as features de entrada com o scaler JÁ TREINADO
+    future_input_scaled = x_scaler.transform(future_input_df)
+
+    # 4. Fazer a previsão com o modelo
+    prediction_scaled = model.predict(future_input_scaled)
+
+    # 5. Reverter a previsão para a escala original
+    prediction_original = y_scaler.inverse_transform(prediction_scaled.reshape(-1, 1)).ravel()[0]
+    
+    return prediction_original
+
+def plot_with_future_prediction(y_train, y_test, y_pred_test, future_year, future_pred, target_variable):
+    """
+    Plota os dados históricos, previsões de teste e a previsão futura.
+    """
+    plt.figure(figsize=(15, 7))
+    
+    # Dados históricos
+    plt.plot(y_train.index, y_train, label='Real (Treino)', marker='.', linestyle='-', color='gray')
+    plt.plot(y_test.index, y_test, label='Real (Teste)', marker='o', linestyle='-', color='blue')
+    
+    # Previsão no conjunto de teste
+    plt.plot(y_test.index, y_pred_test, label='Previsto (Teste)', marker='x', linestyle='--', color='red')
+        
+    # Previsão futura destacada
+    plt.plot(future_year, future_pred, 
+             label=f'Forecast {future_year}', 
+             marker='*', 
+             markersize=15, 
+             linestyle='none', 
+             color='green',
+             zorder=10) # zorder alto para garantir que fique na frente
+
+    plt.title(f'Análise e Forecast de {target_variable.replace("_", " ").title()} com Lasso')
+    plt.xlabel('Ano')
+    plt.ylabel(target_variable.replace("_", " ").title())
+    plt.legend()
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    plt.show()
