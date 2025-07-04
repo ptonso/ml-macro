@@ -1,39 +1,16 @@
 from pathlib import Path
-import sys
-import os
-
-# Add parent directories to path
-current_dir = Path(__file__).parent
-parent_dir = current_dir.parent
-grandparent_dir = parent_dir.parent
-sys.path.insert(0, str(grandparent_dir))
-sys.path.insert(0, str(parent_dir))
 
 from bokeh.io import curdoc
 from bokeh.layouts import column, row
 from bokeh.models import Tabs, TabPanel, Div, Select, Slider, CheckboxGroup
 
-# Now import from the correct paths
-try:
-    # Try absolute imports first
-    from src.dashboard.config import WorldTimeConfig
-    from src.dashboard.utils import format_option_name, make_blue_red_transparent_palette
-    from src.dashboard.data_manager import DataManager
-    from src.dashboard.geo import GeoDash
-    from src.dashboard.series import SeriesDash
-    from src.dashboard.forecast import ForecastDash
-    from src.logger import setup_logger, setup_logging
-except ImportError:
-    # Fall back to relative imports
-    from config import WorldTimeConfig
-    from utils import format_option_name, make_blue_red_transparent_palette
-    from data_manager import DataManager
-    from geo import GeoDash
-    from series import SeriesDash
-    from forecast import ForecastDash
-    # For logger, we need to go up one level
-    sys.path.insert(0, str(parent_dir))
-    from logger import setup_logger, setup_logging
+from src.dashboard.config import WorldTimeConfig
+from src.dashboard.utils import format_option_name, make_blue_red_transparent_palette
+from src.dashboard.data_manager import DataManager
+from src.dashboard.geo import GeoDash
+from src.dashboard.series import SeriesDash
+from src.dashboard.forecast import ForecastDash
+from src.logger import setup_logger, setup_logging
 
 class MultiDashboard:
     def __init__(self, cfg: WorldTimeConfig):
@@ -148,13 +125,52 @@ class MultiDashboard:
     def run(self):
         self.logger.info("Starting dashboard")
         
-        # Get the forecast panel layout directly
-        forecast_layout = self.forecast_panel.get_layout()
+        # Create forecast panel layout with clean organization
+        forecast_controls_header = Div(
+            text="<h3 style='margin:0 0 25px 0; color:#324376; font-weight:400; font-size:20px;'>Forecast Configuration</h3>",
+            width=1400,
+            height=30,
+            styles={"border-bottom": "1px solid #ddd", "padding-bottom": "15px"}
+        )
+        
+        # Left side controls - better organized
+        left_controls = column(
+            Div(text="<h4 style='margin:0 0 10px 0; color:#666; font-size:14px; font-weight:500;'>SETUP</h4>"),
+            self.forecast_panel.country_select,
+            Div(text="", height=10),  # Spacer
+            self.forecast_panel.train_split_slider,
+            Div(text="", height=10),  # Spacer  
+            self.forecast_panel.target_year_slider,
+            Div(text="", height=20),  # Larger spacer
+            self.forecast_panel.forecast_button,
+            Div(text="", height=8),  # Small spacer between buttons
+            self.forecast_panel.clear_button,
+            width=280,
+            styles={"margin-right": "50px", "padding": "20px", "background": "#f8f9fa", "border-radius": "8px"}
+        )
+        
+        # Right side - results and chart organized vertically
+        right_content = column(
+            self.forecast_panel.results_div,
+            Div(text="", height=20),  # Spacer between results and chart
+            self.forecast_panel.fig,
+            width=1000
+        )
+        
+        # Main forecast layout
+        forecast_main = row(left_controls, right_content)
+        
+        forecast_controls = column(
+            forecast_controls_header,
+            forecast_main,
+            width=1400,
+            styles={"padding": "30px", "background": "#ffffff", "border": "1px solid #e0e0e0", "border-radius": "8px"}
+        )
         
         tabs = Tabs(tabs=[
             TabPanel(child=column(self.geo_panel.fig), title="Geospatial"),
             TabPanel(child=column(self.series_panel.fig), title="Individual"),
-            TabPanel(child=forecast_layout, title="Forecast")
+            TabPanel(child=forecast_controls, title="Forecast")
         ])
         
         # Clean overall layout
