@@ -62,8 +62,8 @@ class ModelLoaders:
         )
 
         cfg = ForecastConfig(
-            window_size   = 1,
-            horizon       = 1,
+            window_size   = 5,
+            horizon       = 3,
             feat_cols     = feat_cols,
             label_col     = label_col,
             group_col     = "country",
@@ -73,6 +73,7 @@ class ModelLoaders:
             batch_size    = 64,
             panel_scaler  = panel_scaler,
             window_scaler = window_scaler,
+            split_mode    = 'temporal'
         )
 
         panel_loader = ForecastDataset.make_panel_loader(self.ml_ready, cfg)

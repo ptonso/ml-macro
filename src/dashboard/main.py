@@ -11,6 +11,7 @@ from src.dashboard.geo import GeoDash
 from src.dashboard.series import SeriesDash
 from src.logger import setup_logger, setup_logging
 
+
 class MultiDashboard:
     def __init__(self, cfg: WorldTimeConfig):
         setup_logging()
@@ -208,3 +209,6 @@ cfg = WorldTimeConfig(
 )
 app = MultiDashboard(cfg)
 app.run()
+
+
+# python3 -m bokeh serve src/dashboard --show --port 5007

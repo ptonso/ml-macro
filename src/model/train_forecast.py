@@ -104,7 +104,6 @@ def train_forecast(
 
 import torch.nn as nn
 import numpy as np
-from sklearn.metrics import mean_squared_error, r2_score
 
 def test_result(
     model: LSTMForecaster,

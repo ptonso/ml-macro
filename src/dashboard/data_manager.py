@@ -9,14 +9,14 @@ from typing import Dict, Any, List, Optional, Tuple, Set
 
 from src.dashboard.config import WorldTimeConfig
 from src.dashboard.utils import safe_log_transform, get_iso3
-from src.preprocess.dataset import Dataset
+from src.preprocess.dataset import Dataset, DatasetConfig
 from src.preprocess.result import ResultData
 
 class DataManager:
     def __init__(self, cfg: WorldTimeConfig):
         self.cfg = cfg
-        self.dataset = Dataset()
-        res = self.dataset.get(ResultData(datadict=True, metadata=True))
+        self.dataset = Dataset(DatasetConfig(type="clean"))
+        res = self.dataset.get()
         self._all_raw: Dict[str, pd.DataFrame] = res.datadict or {}
         self.category_dict: Dict[str, str] = res.metadata.category_dict
         self.world: gpd.GeoDataFrame = gpd.GeoDataFrame()
