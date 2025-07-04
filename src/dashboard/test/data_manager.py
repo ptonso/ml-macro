@@ -9,23 +9,21 @@ from typing import Dict, Any, List, Optional, Tuple, Set
 
 from src.dashboard.config import WorldTimeConfig
 from src.dashboard.utils import safe_log_transform, get_iso3
-from src.preprocess.dataset import Dataset  # Import Dataset correctly
+from src.preprocess.dataset import Dataset
+from src.preprocess.result import ResultData
 
 class DataManager:
     def __init__(self, cfg: WorldTimeConfig):
         self.cfg = cfg
-        # Initialize Dataset
         self.dataset = Dataset()
-        self.result_data = self.dataset.get(datadict=True, metadata=True)
-        self._all_raw: Dict[str, pd.DataFrame] = self.result_data.datadict or {}
-        self.category_dict: Dict[str, str] = self.result_data.metadata.category_dict
+        res = self.dataset.get(ResultData(datadict=True, metadata=True))
+        self._all_raw: Dict[str, pd.DataFrame] = res.datadict or {}
+        self.category_dict: Dict[str, str] = res.metadata.category_dict
         self.world: gpd.GeoDataFrame = gpd.GeoDataFrame()
         self.load_shapefile()
         self.years: List[str] = []
         self.precomputed: Dict[str, Dict[str, Any]] = {}
         self.country_data_cache: Dict[str, Dict[str, Dict[str, Any]]] = {}
-        # Store country data for forecast
-        self._country_dataframes: Dict[str, pd.DataFrame] = {}
 
     def load_shapefile(self) -> None:
         shp_dir = self.cfg.shapefile_dir / "ne_110m_admin_0_countries"
@@ -45,21 +43,6 @@ class DataManager:
 
         self.world = gpd.read_file(shp_path)
         self.world["geometry"] = self.world.geometry.simplify(tolerance=0.01)
-
-    def get_country_dataframe(self, country: str) -> Optional[pd.DataFrame]:
-        """Get country data using Dataset.get_country_data"""
-        if country not in self._country_dataframes:
-            df = self.dataset.get_country_data(country)
-            if df is not None:
-                # Ensure we have numeric columns only
-                numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-                if 'year' not in numeric_cols and 'year' in df.columns:
-                    # Keep year as index or column
-                    df_numeric = df[['year'] + [col for col in numeric_cols if col != 'year']]
-                else:
-                    df_numeric = df[numeric_cols]
-                self._country_dataframes[country] = df_numeric
-        return self._country_dataframes.get(country)
 
     def fetch_and_prepare(self, indicator: str) -> None:
         raw = self._all_raw.get(indicator)
