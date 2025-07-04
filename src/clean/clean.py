@@ -40,7 +40,7 @@ def clean_datadict(
 
 def filter_datadict(
     datadict: Dict[str, pd.DataFrame],
-    start_year: int = 2000,
+    start_year: int = 1991,
     feat_missing_thresh: float = 0.3,
     country_missing_thresh: float = 0.3,
     spline_order: int = 3      # here used as the minimum points threshold for cubic
@@ -80,7 +80,7 @@ def filter_datadict(
 
 def interpolate_datadict(
     filtered_datadict: Dict[str, pd.DataFrame],
-    start_year: int = 1991,
+    start_year: int = 2000,
     feat_missing_thresh: float = 0.3,
     country_missing_thresh: float = 0.3,
     spline_order: int = 3      # here used as the minimum points threshold for cubic

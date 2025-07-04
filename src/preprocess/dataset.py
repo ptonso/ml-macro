@@ -179,6 +179,30 @@ class Dataset:
                 self._ml_ready = merged.sort_values(["date", "country"]).reset_index(drop=True)
         return self._ml_ready
 
+    def get_country_data(self, country_name: str) -> pd.DataFrame | None:
+        """
+        return all numeric variables of a country, indexed by year, from the year 2000 onwards.
+        """
+        df = self.ml_ready
+        if df.empty:
+            return None
+
+        country_df = df.loc[df["country"].str.lower() == country_name.lower()].copy()
+        if country_df.empty:
+            return None
+
+        country_df["year"] = country_df["date"].dt.year
+
+        if country_df.empty:
+            return None
+
+        country_df.set_index("year", inplace=True)
+        country_df.drop(columns=["date", "country"], inplace=True, errors="ignore")
+        country_df.reset_index(inplace=True)
+
+        return country_df
+
+
     @property
     def metadata(self) -> Metadata:
         if self._metadata is None:
