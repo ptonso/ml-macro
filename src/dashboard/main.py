@@ -9,8 +9,8 @@ from src.dashboard.utils import format_option_name, make_blue_red_transparent_pa
 from src.dashboard.data_manager import DataManager
 from src.dashboard.geo import GeoDash
 from src.dashboard.series import SeriesDash
+from src.dashboard.forecast import ForecastDash
 from src.logger import setup_logger, setup_logging
-
 
 class MultiDashboard:
     def __init__(self, cfg: WorldTimeConfig):
@@ -26,8 +26,9 @@ class MultiDashboard:
         )
         self.geo_panel = GeoDash(self.dm.world, palette=palette)
         self.series_panel = SeriesDash(self.dm.years)
+        self.forecast_panel = ForecastDash(self.dm.years)
         self.title_div = Div(
-            width=1100, height=50,
+            width=1500, height=50,
             styles={"font-size":"24pt","font-weight":"bold","text-align":"center"}
         )
         self._make_sidebar()
@@ -123,18 +124,73 @@ class MultiDashboard:
 
     def run(self):
         self.logger.info("Starting dashboard")
+        
+        # Create forecast panel layout with clean organization
+        forecast_controls_header = Div(
+            text="<h3 style='margin:0 0 25px 0; color:#324376; font-weight:400; font-size:20px;'>Forecast Configuration</h3>",
+            width=1400,
+            height=30,
+            styles={"border-bottom": "1px solid #ddd", "padding-bottom": "15px"}
+        )
+        
+        # Left side controls - better organized
+        left_controls = column(
+            Div(text="<h4 style='margin:0 0 10px 0; color:#666; font-size:14px; font-weight:500;'>SETUP</h4>"),
+            self.forecast_panel.country_select,
+            Div(text="", height=10),  # Spacer
+            self.forecast_panel.train_split_slider,
+            Div(text="", height=10),  # Spacer  
+            self.forecast_panel.target_year_slider,
+            Div(text="", height=20),  # Larger spacer
+            self.forecast_panel.forecast_button,
+            Div(text="", height=8),  # Small spacer between buttons
+            self.forecast_panel.clear_button,
+            width=280,
+            styles={"margin-right": "50px", "padding": "20px", "background": "#f8f9fa", "border-radius": "8px"}
+        )
+        
+        # Right side - results and chart organized vertically
+        right_content = column(
+            self.forecast_panel.results_div,
+            Div(text="", height=20),  # Spacer between results and chart
+            self.forecast_panel.fig,
+            width=1000
+        )
+        
+        # Main forecast layout
+        forecast_main = row(left_controls, right_content)
+        
+        forecast_controls = column(
+            forecast_controls_header,
+            forecast_main,
+            width=1400,
+            styles={"padding": "30px", "background": "#ffffff", "border": "1px solid #e0e0e0", "border-radius": "8px"}
+        )
+        
         tabs = Tabs(tabs=[
             TabPanel(child=column(self.geo_panel.fig), title="Geospatial"),
             TabPanel(child=column(self.series_panel.fig), title="Individual"),
+            TabPanel(child=forecast_controls, title="Forecast")
         ])
         
-        layout = column(row(self.sidebar, column(self.title_div, tabs)))
+        # Clean overall layout
+        layout = column(
+            row(
+                self.sidebar, 
+                column(
+                    self.title_div, 
+                    tabs,
+                    width=1450
+                )
+            )
+        )
         curdoc().add_root(layout)
         curdoc().title = self.cfg.title
 
     def _on_sector(self, attr, old, new):
         self.series_panel.clear()
         self.geo_panel.clear()
+        self.forecast_panel.clear()
         self.title_div.text = ""
         self.current_indicator = ""
         self.country_select.options = [("", "Select Country")]
@@ -184,19 +240,39 @@ class MultiDashboard:
             filter_year=initial
         )
         
+        # Update forecast panel
+        self.forecast_panel.update(self.dm, new)
+        
         self._update_country_options(False)
         
         self.country_select.value = ""
 
         self.geo_panel.set_year(initial)
-        self.title_div.text = f"{format_option_name(new).upper()} ({initial})"
+        self.title_div.text = f"{self._format_indicator_title(new)} ({initial})"
+
+    def _format_indicator_title(self, indicator):
+        """Format indicator name for display"""
+        # Convert underscores to spaces and capitalize properly
+        formatted = indicator.replace('_', ' ')
+        # Split by spaces and capitalize each word
+        words = formatted.split()
+        capitalized_words = []
+        for word in words:
+            if len(word) > 2:  # Capitalize longer words
+                capitalized_words.append(word.capitalize())
+            else:  # Keep short words (like 'of', 'in') lowercase unless first word
+                if len(capitalized_words) == 0:
+                    capitalized_words.append(word.capitalize())
+                else:
+                    capitalized_words.append(word.lower())
+        return ' '.join(capitalized_words)
 
     def _on_year(self, attr, old, new):
         if not self.current_indicator:
             return
             
         yr = str(new)
-        label = format_option_name(self.current_indicator).upper()
+        label = self._format_indicator_title(self.current_indicator)
         self.title_div.text = f"{label} ({yr})"
         self.geo_panel.set_year(yr)
         self.series_panel.update_filter_year(yr)
@@ -209,6 +285,3 @@ cfg = WorldTimeConfig(
 )
 app = MultiDashboard(cfg)
 app.run()
-
-
-# python3 -m bokeh serve src/dashboard --show --port 5007
